@@ -9,7 +9,7 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>bommons-items</artifactId>
+    <artifactId>bommons-ticks</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

@@ -2,20 +2,14 @@ package io.github.aparx.bommons.item.modifiers;
 
 import io.github.aparx.bommons.item.ItemStackBuilder;
 import io.github.aparx.bommons.item.StackMetaModifier;
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author aparx (Vinzent Z.)
@@ -23,7 +17,6 @@ import java.util.UUID;
  * @since 1.0
  */
 @DefaultQualifier(NonNull.class)
-@SerializableAs("Bommons.ArmorMetaModifier")
 public class ArmorMetaModifier extends StackMetaModifier {
 
   private final @Nullable Color color;

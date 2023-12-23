@@ -10,8 +10,10 @@
     <packaging>pom</packaging>
     <modules>
         <module>bommons-items</module>
-        <module>bommons-core</module>
+        <module>bommons-commons</module>
         <module>bommons-plugin</module>
+        <module>bommons-ticks</module>
+        <module>bommons-inventory</module>
     </modules>
 
     <properties>

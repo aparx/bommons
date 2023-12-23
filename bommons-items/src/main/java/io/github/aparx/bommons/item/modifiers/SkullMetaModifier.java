@@ -4,7 +4,6 @@ import io.github.aparx.bommons.item.ItemStackBuilder;
 import io.github.aparx.bommons.item.StackMetaModifier;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -20,7 +19,6 @@ import java.util.UUID;
  * @since 1.0
  */
 @DefaultQualifier(NonNull.class)
-@SerializableAs("Bommons.SkullMetaModifier")
 public class SkullMetaModifier extends StackMetaModifier {
 
   private final @Nullable OfflinePlayer owningPlayer;

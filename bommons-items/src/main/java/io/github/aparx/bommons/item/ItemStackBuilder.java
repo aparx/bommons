@@ -9,15 +9,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.util.Consumer;
 import org.bukkit.util.NumberConversions;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -32,7 +29,6 @@ import java.util.*;
  * @since 1.0
  */
 @DefaultQualifier(NonNull.class)
-@SerializableAs("Bommons.ItemStackBuilder")
 public class ItemStackBuilder implements ConfigurationSerializable {
 
   static {
@@ -287,8 +283,8 @@ public class ItemStackBuilder implements ConfigurationSerializable {
   }
 
   @CheckReturnValue
-  public BommonsItemStack wrap() {
-    return new BommonsItemStack(build());
+  public WrappedItemStack wrap() {
+    return new WrappedItemStack(build());
   }
 
   public ItemStackBuilder copy() {
