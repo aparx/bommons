@@ -2,7 +2,6 @@ package io.github.aparx.bommons.inventory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -32,7 +31,7 @@ public class InventorySection implements Iterable<InventoryPosition> {
   private InventorySection(InventoryPosition begin, InventoryPosition end) {
     this.begin = begin;
     this.end = end;
-    this.dimensions = InventoryDimensions.ofSize(size(), begin.getWidth());
+    this.dimensions = InventoryDimensions.ofSize(size(), 1 + end.getColumn() - begin.getColumn());
   }
 
   /**
@@ -67,7 +66,7 @@ public class InventorySection implements Iterable<InventoryPosition> {
   }
 
   public int size() {
-    return 1 + begin.distance(end);
+    return (1 + end.getRow() - begin.getRow()) * (1 + end.getColumn() - begin.getColumn());
   }
 
   public InventorySection subsection(int fromRelativeIndex, int toRelativeIndex) {
@@ -87,6 +86,14 @@ public class InventorySection implements Iterable<InventoryPosition> {
   public InventorySection subsection(int fromRelativeIndex) {
     Preconditions.checkArgument(fromRelativeIndex >= 0, "Index must not be negative");
     return subsection(fromRelativeIndex, size());
+  }
+
+  public InventorySection shrink(int column, int row) {
+    return of(begin.add(column, row), end.subtract(column, row));
+  }
+
+  public InventorySection expand(int column, int row) {
+    return of(begin.subtract(column, row), end.add(column, row));
   }
 
   public boolean includes(int index) {
@@ -119,7 +126,7 @@ public class InventorySection implements Iterable<InventoryPosition> {
       if (interpolation != null)
         return interpolation;
       // interpolation from `begin` to (inclusively) `end`
-      // TODO map each position to its actual index within the collection?
+      // TODO map each position to its actual index
       final int length = size();
       ImmutableList.Builder<InventoryPosition> builder =
           ImmutableList.builderWithExpectedSize(1 + length);
@@ -127,7 +134,7 @@ public class InventorySection implements Iterable<InventoryPosition> {
       int yLength = end.getRow() - begin.getRow();
       for (int x = 0; x <= xLength; ++x)
         for (int y = 0; y <= yLength; ++y)
-          builder.add(begin.add(x, y));
+          builder.add(begin.add(x, y, 1 + xLength));
       this.interpolation = builder.build();
       return this.interpolation;
     }
@@ -176,5 +183,13 @@ public class InventorySection implements Iterable<InventoryPosition> {
   @Override
   public int hashCode() {
     return Objects.hash(begin, end);
+  }
+
+  @Override
+  public String toString() {
+    return "InventorySection{" +
+        "begin=" + begin +
+        ", end=" + end +
+        '}';
   }
 }

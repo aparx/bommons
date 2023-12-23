@@ -6,7 +6,7 @@ import io.github.aparx.bommons.inventory.InventoryPosition;
 import io.github.aparx.bommons.inventory.InventorySection;
 import io.github.aparx.bommons.inventory.item.InventoryItem;
 import io.github.aparx.bommons.inventory.item.InventoryItemAccessor;
-import io.github.aparx.bommons.inventory.custom.InventoryLayerView;
+import io.github.aparx.bommons.inventory.custom.InventoryContentView;
 import org.apache.commons.lang3.ArrayUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -24,42 +24,40 @@ import java.util.Stack;
 // A page consists out of multiple layers of content sections
 // A page represents the top layer content of an inventory
 @DefaultQualifier(NonNull.class)
-public class InventoryPage implements InventoryLayerView {
-
-  private final InventorySection section;
+public class InventoryLayerGroup extends InventoryContentView {
 
   /** A map of each index of this page, mapped to a specific section */
-  private final List<InventoryLayerView> layers = new Stack<>();
+  private final List<InventoryContentView> layers = new Stack<>();
 
-  public InventoryPage(InventorySection section) {
-    this.section = section;
+  public InventoryLayerGroup(InventorySection area) {
+    super(area);
   }
 
   public void clear() {
     layers.clear();
   }
 
-  public void addLayer(InventoryLayerView layerView) {
+  public void addLayer(InventoryContentView layerView) {
     Preconditions.checkNotNull(layerView, "Layer must not be null");
     InventorySection section = layerView.getArea();
-    Preconditions.checkArgument(this.section.includes(section), "layerView is not within page");
+    Preconditions.checkArgument(getArea().includes(section), "layerView is not within page");
     synchronized (this) {
       layers.add(layerView);
     }
   }
 
-  public void addLayers(InventoryLayerView... layers) {
+  public void addLayers(InventoryContentView... layers) {
     if (ArrayUtils.isNotEmpty(layers))
       this.layers.addAll(Arrays.asList(layers));
   }
 
   @CanIgnoreReturnValue
-  public @Nullable InventoryLayerView setLayer(int layerIndex, InventoryLayerView layerView) {
+  public @Nullable InventoryContentView setLayer(int layerIndex, InventoryContentView layerView) {
     Preconditions.checkNotNull(layerView, "Layer must not be null");
     return layers.set(layerIndex, layerView);
   }
 
-  public InventoryLayerView getLayer(int layerIndex) {
+  public InventoryContentView getLayer(int layerIndex) {
     Preconditions.checkElementIndex(layerIndex, layers.size());
     return layers.get(layerIndex);
   }
@@ -67,18 +65,14 @@ public class InventoryPage implements InventoryLayerView {
   @Override
   public @Nullable InventoryItem get(
       @Nullable InventoryItemAccessor accessor, InventoryPosition position) {
-    Preconditions.checkArgument(section.includes(position), "Position is not within page");
+    if (!getArea().includes(position))
+      return null;
     for (int i = layers.size(); i > 0; --i) {
-      InventoryLayerView layerView = layers.get(i - 1);
+      InventoryContentView layerView = layers.get(i - 1);
       @Nullable InventoryItem inventoryItem = layerView.get(accessor, position);
       if (inventoryItem != null) return inventoryItem;
     }
     return null;
-  }
-
-  @Override
-  public @NonNull InventorySection getArea() {
-    return section;
   }
 
 }

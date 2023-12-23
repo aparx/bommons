@@ -160,8 +160,7 @@ public class ItemStackBuilder implements ConfigurationSerializable {
     itemStack.setType(type);
     itemStack.setAmount(amount);
     @Nullable ItemMeta itemMeta = itemStack.getItemMeta();
-    if (itemMeta != null && itemStack.hasItemMeta())
-      applyOnto(itemMeta);
+    if (itemMeta != null) applyOnto(itemMeta);
     itemStack.setItemMeta(itemMeta);
     return itemStack;
   }
@@ -279,7 +278,7 @@ public class ItemStackBuilder implements ConfigurationSerializable {
 
   @CheckReturnValue
   public ItemStack build() {
-    return applyOnto(new ItemStack(Material.AIR));
+    return applyOnto(new ItemStack(Material.STICK));
   }
 
   @CheckReturnValue

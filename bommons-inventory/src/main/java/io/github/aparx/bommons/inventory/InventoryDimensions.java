@@ -97,4 +97,12 @@ public class InventoryDimensions implements ConfigurationSerializable {
       consumer.accept(i);
   }
 
+  @Override
+  public String toString() {
+    return "InventoryDimensions{" +
+        "width=" + width +
+        ", height=" + height +
+        '}';
+  }
+
 }

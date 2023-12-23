@@ -28,12 +28,24 @@ public final class InventoryItemFactory {
     return new InventoryItemBuilder();
   }
 
+  public static InventoryItemBuilder builder(InventoryItem source) {
+    return new InventoryItemBuilder().item(source::get).setClickHandle(source);
+  }
+
   public static InventoryItem of(@Nullable ItemStack itemStack) {
     return builder().item(itemStack).build();
   }
 
   public static InventoryItem of(@Nullable WrappedItemStack itemStack) {
     return builder().item(itemStack).build();
+  }
+
+  public static InventoryItem ofCancelled(@Nullable ItemStack itemStack) {
+    return builder().item(itemStack).cancel().build();
+  }
+
+  public static InventoryItem ofCancelled(@Nullable WrappedItemStack itemStack) {
+    return builder().item(itemStack).cancel().build();
   }
 
   public static InventoryItem ofClickable(

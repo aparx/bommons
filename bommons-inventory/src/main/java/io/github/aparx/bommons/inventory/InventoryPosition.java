@@ -47,8 +47,16 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
     return FIRST_POSITION;
   }
 
+  public static InventoryPosition ofLast(InventorySection section) {
+    return ofIndex(section.size() - 1, section.getDimensions().getWidth());
+  }
+
+  public static InventoryPosition ofLast(InventoryDimensions dimensions) {
+    return ofIndex(dimensions.size() - 1, dimensions.getWidth());
+  }
+
   public static InventoryPosition ofPoint(int column, int row, int width) {
-    if (column == 0 && row == 0)
+    if (column == 0 && row == 0 && width == FIRST_POSITION.getWidth())
       return FIRST_POSITION;
     Preconditions.checkArgument(column >= 0, "Column must not be negative");
     Preconditions.checkArgument(row >= 0, "Row must not be negative");
@@ -121,6 +129,36 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
 
   public int distance(InventoryPosition other) {
     return other.getIndex() - getIndex();
+  }
+
+  /**
+   * Returns a position relative to given {@code dimensions}.
+   *
+   * @param dimensions the relative dimensions
+   * @return the new position, relative to {@code dimensions}
+   */
+  public InventoryPosition relative(InventoryDimensions dimensions) {
+    final int width = dimensions.getWidth();
+    return (this.width != width ? ofIndex(getIndex(), width) : this);
+  }
+
+  /**
+   * Returns a new position that is set relative to {@code section}'s boundaries, such that a
+   * returning zero position would represent the farthest top left corner within a matrix of
+   * {@code section} (so the beginning position).
+   *
+   * @param section the section to make this position relative to
+   * @return the relative position
+   * @throws IllegalArgumentException if this position lies outside {@code section}, such that
+   *                                  {@code section.includes(this)} evaluates false.
+   * @see InventorySection#includes(InventoryPosition)
+   */
+  public InventoryPosition relative(InventorySection section) {
+    Preconditions.checkArgument(section.includes(this), "Section does not contain position");
+    InventoryPosition begin = section.getBegin();
+    int width = section.getDimensions().getWidth();
+    return InventoryPosition.ofIndex((getIndex() - begin.getIndex())
+        - (getRow() - begin.getRow()) * (getWidth() - width), width);
   }
 
   @CheckReturnValue

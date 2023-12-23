@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -37,17 +38,20 @@ public class CustomInventoryListener implements Listener {
     HumanEntity humanEntity = event.getWhoClicked();
     if (!(humanEntity instanceof Player)) return;
     Player player = (Player) humanEntity;
-    @Nullable CustomInventory thisInventory = this.inventory.get();
-    if (thisInventory != null && thisInventory.isViewer(player)
-        && event.getInventory().equals(thisInventory.getInventory())) {
-      @Nullable InventoryLayerView content = thisInventory.getContent();
-      if (content == null) return;
-      @Nullable InventoryItem inventoryItem = content.get(thisInventory,
-          InventoryPosition.ofIndex(event.getSlot(), content.getDimensions().getWidth()));
-      if (inventoryItem != null)
-        inventoryItem.handleClick(event);
-    } else if (thisInventory != null)
-      HandlerList.unregisterAll(this);
+    int slot = event.getSlot();
+    if (slot >= 0 && event.getSlotType() == InventoryType.SlotType.CONTAINER) {
+      @Nullable CustomInventory thisInventory = this.inventory.get();
+      if (thisInventory != null && thisInventory.isViewer(player)
+          && event.getInventory().equals(thisInventory.getInventory())) {
+        @Nullable InventoryContentView content = thisInventory.getContent();
+        if (content == null) return;
+        @Nullable InventoryItem inventoryItem = content.get(thisInventory,
+            InventoryPosition.ofIndex(slot, content.getDimensions().getWidth()));
+        if (inventoryItem != null)
+          inventoryItem.handleClick(event);
+      } else if (thisInventory != null)
+        HandlerList.unregisterAll(this);
+    }
   }
 
   public CustomInventory getInventory() {

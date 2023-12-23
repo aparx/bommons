@@ -108,4 +108,9 @@ public class TestInventoryPosition {
     Assert.assertThrows(IllegalArgumentException.class, () -> point.subtract(-7, 3));
   }
 
+  @Test
+  public void testRelative() {
+
+  }
+
 }

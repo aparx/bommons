@@ -43,13 +43,13 @@ public class CustomInventory implements InventoryItemAccessor {
 
   /** Current update task running for all viewers */
   protected @Nullable BukkitTask task;
-  protected @Nullable InventoryLayerView content;
+  protected @Nullable InventoryContentView content;
   protected @Nullable Inventory inventory;
 
   protected final CustomInventoryListener listener = new CustomInventoryListener(this);
 
   public CustomInventory(Plugin plugin, String title) {
-    this(plugin, TickDuration.of(TickTimeUnit.TICKS, 0), title);
+    this(plugin, TickDuration.nil(), title);
   }
 
   public CustomInventory(Plugin plugin, TickDuration updateInterval, String title) {
@@ -61,7 +61,7 @@ public class CustomInventory implements InventoryItemAccessor {
     this.title = title;
   }
 
-  public void updateContent(InventoryLayerView content) {
+  public void updateContent(InventoryContentView content) {
     Preconditions.checkNotNull(content, "Content must not be null");
     @Nullable InventoryDimensions currentInventoryDimensions = (
         this.content != null ? this.content.getDimensions() : null);
@@ -82,7 +82,6 @@ public class CustomInventory implements InventoryItemAccessor {
       renderInventory(false);
       start(); // ensure render update-task start
       viewer.openInventory(inventory);
-      Bukkit.getPluginManager().registerEvents(listener, plugin);
       return true;
     }
   }
@@ -95,7 +94,6 @@ public class CustomInventory implements InventoryItemAccessor {
       if (!viewers.remove(viewer))
         return false;
       revalidateTask();
-      HandlerList.unregisterAll(listener);
       return true;
     }
   }
@@ -122,16 +120,16 @@ public class CustomInventory implements InventoryItemAccessor {
       @Nullable InventoryItem item = content.get(this, position);
       inventory.setItem(position.getIndex(), (item != null ? item.get(this) : null));
     });
-    if (checkForViewers) {
-      List<Player> removeViewers = new ArrayList<>(0);
-      viewers.forEach((viewer) -> {
-        Inventory topInventory = viewer.getOpenInventory().getTopInventory();
-        if (!Objects.equals(topInventory, inventory))
-          removeViewers.add(viewer);
-      });
-      removeViewers.forEach(this::close);
-    }
-    return false;
+    if (!checkForViewers)
+      return false;
+    List<Player> removeViewers = new ArrayList<>(0);
+    viewers.forEach((viewer) -> {
+      Inventory topInventory = viewer.getOpenInventory().getTopInventory();
+      if (!Objects.equals(topInventory, inventory))
+        removeViewers.add(viewer);
+    });
+    removeViewers.forEach(viewers::remove);
+    return !removeViewers.isEmpty() && revalidateTask();
   }
 
   @CanIgnoreReturnValue
@@ -144,6 +142,7 @@ public class CustomInventory implements InventoryItemAccessor {
       // render the inventory with viewer check
       this.task = Bukkit.getScheduler().runTaskTimer(plugin, this::updateInventory,
           updateInterval.toTicks(), updateInterval.toTicks());
+      Bukkit.getPluginManager().registerEvents(listener, plugin);
       return true;
     }
   }
@@ -159,6 +158,7 @@ public class CustomInventory implements InventoryItemAccessor {
       task = null;
       viewers.clear();
       updateTicker.reset();
+      HandlerList.unregisterAll(listener);
       return true;
     }
   }
@@ -177,7 +177,7 @@ public class CustomInventory implements InventoryItemAccessor {
     viewers.forEach((viewer) -> viewer.openInventory(inventory));
   }
 
-  public @Nullable InventoryLayerView getContent() {
+  public @Nullable InventoryContentView getContent() {
     return content;
   }
 
