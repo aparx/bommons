@@ -27,14 +27,6 @@ public class InventoryStorageLayer extends InventoryContentView implements Itera
   /** Growable and shrinkable array to avoid memory overhead */
   private final IndexMap<@Nullable InventoryItem> elementsArray = new IndexMap<>();
 
-  public InventoryStorageLayer(InventoryDimensions dimensions) {
-    super(dimensions);
-  }
-
-  public InventoryStorageLayer(InventorySection area) {
-    super(area);
-  }
-
   public InventoryStorageLayer(InventorySection area, @Nullable InventorySection parent) {
     super(area, parent);
   }

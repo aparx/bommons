@@ -15,9 +15,9 @@ public class TestDefaultTicker {
   public void testGetDuration() {
     DefaultTicker ticker = new DefaultTicker(TickTimeUnit.SECONDS);
     ticker.set(60);
-    Assert.assertEquals(TickDuration.one(TickTimeUnit.MINUTES), ticker.getElapsedDuration());
-    Assert.assertNotEquals(TickDuration.nil(TickTimeUnit.MINUTES), ticker.getElapsedDuration());
-    Assert.assertEquals(TickDuration.nil(TickTimeUnit.HOURS), ticker.getElapsedDuration());
+    Assert.assertEquals(TickDuration.ofOne(TickTimeUnit.MINUTES), ticker.getElapsedDuration());
+    Assert.assertNotEquals(TickDuration.ofNil(TickTimeUnit.MINUTES), ticker.getElapsedDuration());
+    Assert.assertEquals(TickDuration.ofNil(TickTimeUnit.HOURS), ticker.getElapsedDuration());
   }
 
   @Test
@@ -41,8 +41,8 @@ public class TestDefaultTicker {
     Assert.assertFalse(ticker.isCycling(59));
 
     Assert.assertTrue(ticker.isCycling(TickTimeUnit.SECONDS));
-    Assert.assertTrue(ticker.isCycling(TickDuration.one(TickTimeUnit.SECONDS)));
-    Assert.assertTrue(ticker.isCycling(TickDuration.nil(TickTimeUnit.SECONDS)));
+    Assert.assertTrue(ticker.isCycling(TickDuration.ofOne(TickTimeUnit.SECONDS)));
+    Assert.assertTrue(ticker.isCycling(TickDuration.ofNil(TickTimeUnit.SECONDS)));
     Assert.assertTrue(ticker.isCycling(TickDuration.of(TickTimeUnit.SECONDS, 2)));
     Assert.assertTrue(ticker.isCycling(TickDuration.of(TickTimeUnit.MINUTES, 1)));
     Assert.assertTrue(ticker.isCycling(TickDuration.of(TickTimeUnit.MINUTES, 2)));

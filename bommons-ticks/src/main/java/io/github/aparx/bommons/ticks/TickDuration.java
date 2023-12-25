@@ -66,19 +66,19 @@ public final class TickDuration implements ConfigurationSerializable {
     return Map.of("unit", unit.name().toLowerCase(), "amount", amount);
   }
 
-  public static TickDuration nil() {
+  public static TickDuration ofNil() {
     return of(TickTimeUnit.TICKS, 0);
   }
 
-  public static TickDuration nil(TickTimeUnit unit) {
+  public static TickDuration ofNil(TickTimeUnit unit) {
     return of(unit, 0);
   }
 
-  public static TickDuration one() {
+  public static TickDuration ofOne() {
     return of(TickTimeUnit.TICKS, 1);
   }
 
-  public static TickDuration one(TickTimeUnit unit) {
+  public static TickDuration ofOne(TickTimeUnit unit) {
     return of(unit, 1);
   }
 

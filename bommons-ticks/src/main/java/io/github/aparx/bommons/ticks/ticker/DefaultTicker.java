@@ -25,11 +25,11 @@ public class DefaultTicker extends AbstractTicker {
   private @Nullable TickDuration elapsedDuration;
 
   public DefaultTicker() {
-    this(TickDuration.nil());
+    this(TickDuration.ofNil());
   }
 
   public DefaultTicker(TickTimeUnit unit) {
-    this(TickDuration.nil(unit));
+    this(TickDuration.ofNil(unit));
   }
 
   public DefaultTicker(TickDuration defaultInterval) {

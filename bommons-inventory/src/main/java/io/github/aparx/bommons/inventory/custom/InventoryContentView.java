@@ -22,19 +22,18 @@ public abstract class InventoryContentView {
   private final @Nullable InventorySection parent;
   private final InventorySection area;
 
-  public InventoryContentView(InventoryDimensions dimensions) {
-    this(InventorySection.of(dimensions));
-  }
-
-  public InventoryContentView(InventorySection area) {
-    this(area, null);
-  }
-
   public InventoryContentView(InventorySection area, @Nullable InventorySection parent) {
     Preconditions.checkNotNull(area, "Area must not be null");
     this.parent = parent;
     this.area = area;
   }
+
+  public static @Nullable InventorySection getArea(@Nullable InventoryContentView view) {
+    return (view != null ? view.getArea() : null);
+  }
+
+  // TODO consider implementing
+  // public void update() {}
 
   public abstract @Nullable InventoryItem get(
       @Nullable InventoryItemAccessor accessor, InventoryPosition position);
@@ -94,18 +93,6 @@ public abstract class InventoryContentView {
    */
   public InventoryPosition fromRelative(InventoryPosition position) {
     return (parent != null ? position.relative(parent) : position).shift(area.getBegin().getIndex());
-  }
-
-  public static InventoryContentView empty(@NonNull InventorySection section) {
-    Preconditions.checkNotNull(section, "Dimensions must not be null");
-    return new InventoryContentView(section) {
-
-      @Override
-      public @Nullable InventoryItem get(
-          @Nullable InventoryItemAccessor accessor, InventoryPosition position) {
-        return null;
-      }
-    };
   }
 
 }

@@ -2,6 +2,7 @@ package io.github.aparx.bommons.inventory.custom.content;
 
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import io.github.aparx.bommons.inventory.InventoryDimensions;
 import io.github.aparx.bommons.inventory.InventoryPosition;
 import io.github.aparx.bommons.inventory.InventorySection;
 import io.github.aparx.bommons.inventory.item.InventoryItem;
@@ -12,6 +13,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
@@ -27,10 +29,10 @@ import java.util.Stack;
 public class InventoryLayerGroup extends InventoryContentView {
 
   /** A map of each index of this page, mapped to a specific section */
-  private final List<InventoryContentView> layers = new Stack<>();
+  private final List<InventoryContentView> layers = new ArrayList<>();
 
-  public InventoryLayerGroup(InventorySection area) {
-    super(area);
+  public InventoryLayerGroup(InventorySection area, @Nullable InventorySection parent) {
+    super(area, parent);
   }
 
   public void clear() {
@@ -41,9 +43,7 @@ public class InventoryLayerGroup extends InventoryContentView {
     Preconditions.checkNotNull(layerView, "Layer must not be null");
     InventorySection section = layerView.getArea();
     Preconditions.checkArgument(getArea().includes(section), "layerView is not within page");
-    synchronized (this) {
-      layers.add(layerView);
-    }
+    layers.add(layerView);
   }
 
   public void addLayers(InventoryContentView... layers) {

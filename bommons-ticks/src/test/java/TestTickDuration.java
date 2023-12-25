@@ -61,7 +61,7 @@ public class TestTickDuration {
 
   @Test
   public void testEquality() {
-    Assert.assertEquals(TickDuration.one(TickTimeUnit.MINUTES),
+    Assert.assertEquals(TickDuration.ofOne(TickTimeUnit.MINUTES),
         TickDuration.of(TickTimeUnit.SECONDS, 60));
     Assert.assertEquals(TickDuration.of(TickTimeUnit.MINUTES, 2),
         TickDuration.of(TickTimeUnit.SECONDS, 120));

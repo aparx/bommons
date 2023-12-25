@@ -88,7 +88,6 @@ public class TestInventoryPosition {
 
     Assert.assertEquals(2, point.add(-1, 3).getColumn());
     Assert.assertEquals(1, point.add(1, -1).getRow());
-
     Assert.assertThrows(IllegalArgumentException.class, () -> point.add(7, 3));
   }
 

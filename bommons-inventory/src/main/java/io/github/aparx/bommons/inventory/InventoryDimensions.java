@@ -16,7 +16,7 @@ import java.util.function.IntConsumer;
  * @since 1.0
  */
 @DefaultQualifier(NonNull.class)
-public class InventoryDimensions implements ConfigurationSerializable {
+public final class InventoryDimensions implements ConfigurationSerializable {
 
   public static final int DEFAULT_WIDTH = 9;
 

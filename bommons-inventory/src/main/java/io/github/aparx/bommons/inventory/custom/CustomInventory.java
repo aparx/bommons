@@ -7,7 +7,6 @@ import io.github.aparx.bommons.inventory.InventoryDimensions;
 import io.github.aparx.bommons.inventory.item.InventoryItem;
 import io.github.aparx.bommons.inventory.item.InventoryItemAccessor;
 import io.github.aparx.bommons.ticks.TickDuration;
-import io.github.aparx.bommons.ticks.TickTimeUnit;
 import io.github.aparx.bommons.ticks.ticker.DefaultTicker;
 import io.github.aparx.bommons.ticks.ticker.Ticker;
 import org.bukkit.Bukkit;
@@ -49,7 +48,7 @@ public class CustomInventory implements InventoryItemAccessor {
   protected final CustomInventoryListener listener = new CustomInventoryListener(this);
 
   public CustomInventory(Plugin plugin, String title) {
-    this(plugin, TickDuration.nil(), title);
+    this(plugin, TickDuration.ofNil(), title);
   }
 
   public CustomInventory(Plugin plugin, TickDuration updateInterval, String title) {
