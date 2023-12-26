@@ -2,13 +2,13 @@ package io.github.aparx.bommons.inventory.custom.content;
 
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import io.github.aparx.bommons.inventory.InventoryDimensions;
 import io.github.aparx.bommons.inventory.InventoryPosition;
 import io.github.aparx.bommons.inventory.InventorySection;
+import io.github.aparx.bommons.inventory.custom.CopyableInventoryContentView;
 import io.github.aparx.bommons.inventory.item.InventoryItem;
 import io.github.aparx.bommons.inventory.item.InventoryItemAccessor;
 import io.github.aparx.bommons.inventory.custom.InventoryContentView;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.Validate;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -16,7 +16,6 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @author aparx (Vinzent Z.)
@@ -26,13 +25,20 @@ import java.util.Stack;
 // A page consists out of multiple layers of content sections
 // A page represents the top layer content of an inventory
 @DefaultQualifier(NonNull.class)
-public class InventoryLayerGroup extends InventoryContentView {
+public class InventoryLayerGroup extends CopyableInventoryContentView {
 
   /** A map of each index of this page, mapped to a specific section */
   private final List<InventoryContentView> layers = new ArrayList<>();
 
   public InventoryLayerGroup(InventorySection area, @Nullable InventorySection parent) {
     super(area, parent);
+  }
+
+  @Override
+  public InventoryContentView copy() {
+    InventoryLayerGroup layerGroup = new InventoryLayerGroup(getArea(), getParent());
+    layerGroup.layers.addAll(layers);
+    return layerGroup;
   }
 
   public void clear() {
@@ -47,8 +53,8 @@ public class InventoryLayerGroup extends InventoryContentView {
   }
 
   public void addLayers(InventoryContentView... layers) {
-    if (ArrayUtils.isNotEmpty(layers))
-      this.layers.addAll(Arrays.asList(layers));
+    Validate.noNullElements(layers, "Layer(s) must not be null");
+    this.layers.addAll(Arrays.asList(layers));
   }
 
   @CanIgnoreReturnValue

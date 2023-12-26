@@ -6,6 +6,7 @@ import io.github.aparx.bommons.core.utils.IndexMap;
 import io.github.aparx.bommons.inventory.InventoryDimensions;
 import io.github.aparx.bommons.inventory.InventoryPosition;
 import io.github.aparx.bommons.inventory.InventorySection;
+import io.github.aparx.bommons.inventory.custom.CopyableInventoryContentView;
 import io.github.aparx.bommons.inventory.item.InventoryItem;
 import io.github.aparx.bommons.inventory.item.InventoryItemAccessor;
 import io.github.aparx.bommons.inventory.custom.InventoryContentView;
@@ -22,13 +23,20 @@ import java.util.function.IntFunction;
  * @since 1.0
  */
 @DefaultQualifier(NonNull.class)
-public class InventoryStorageLayer extends InventoryContentView implements Iterable<@Nullable InventoryItem> {
+public class InventoryStorageLayer extends CopyableInventoryContentView implements Iterable<@Nullable InventoryItem> {
 
   /** Growable and shrinkable array to avoid memory overhead */
-  private final IndexMap<@Nullable InventoryItem> elementsArray = new IndexMap<>();
+  private final IndexMap<@Nullable InventoryItem> elementIndexMap = new IndexMap<>();
 
   public InventoryStorageLayer(InventorySection area, @Nullable InventorySection parent) {
     super(area, parent);
+  }
+
+  @Override
+  public InventoryStorageLayer copy() {
+    InventoryStorageLayer layer = new InventoryStorageLayer(getArea(), getParent());
+    layer.elementIndexMap.putAll(elementIndexMap);
+    return layer;
   }
 
   public boolean includes(int index) {
@@ -43,8 +51,8 @@ public class InventoryStorageLayer extends InventoryContentView implements Itera
   public @Nullable InventoryItem get(
       @Nullable InventoryItemAccessor accessor, InventoryPosition position) {
     int elementIndex = toAreaElementIndex(position);
-    if (elementIndex >= 0 && elementIndex < elementsArray.capacity())
-      return elementsArray.get(elementIndex);
+    if (elementIndex >= 0 && elementIndex < elementIndexMap.capacity())
+      return elementIndexMap.get(elementIndex);
     return null;
   }
 
@@ -53,37 +61,37 @@ public class InventoryStorageLayer extends InventoryContentView implements Itera
     int elementIndex = toAreaElementIndex(position);
     if (elementIndex < 0)
       throw new IllegalArgumentException("Position is outside the view");
-    return elementsArray.put(elementIndex, item);
+    return elementIndexMap.put(elementIndex, item);
   }
 
   @CanIgnoreReturnValue
   public @Nullable InventoryItem set(int elementIndex, @Nullable InventoryItem item) {
     Preconditions.checkElementIndex(elementIndex, getArea().size());
-    return elementsArray.put(elementIndex, item);
+    return elementIndexMap.put(elementIndex, item);
   }
 
   @CanIgnoreReturnValue
   public @Nullable InventoryItem remove(int elementIndex) {
     Preconditions.checkElementIndex(elementIndex, getArea().size());
-    return elementsArray.remove(elementIndex);
+    return elementIndexMap.remove(elementIndex);
   }
 
   @CanIgnoreReturnValue
   public boolean remove(int elementIndex, @Nullable InventoryItem item) {
     Preconditions.checkElementIndex(elementIndex, getArea().size());
-    return elementsArray.remove(elementIndex, item);
+    return elementIndexMap.remove(elementIndex, item);
   }
 
   public void clear() {
-    elementsArray.clear();
+    elementIndexMap.clear();
   }
 
   @CanIgnoreReturnValue
   public InventoryStorageLayer fill(IntFunction<@Nullable InventoryItem> itemFactory) {
     final int length = getArea().size();
-    elementsArray.ensureCapacity(length);
+    elementIndexMap.ensureCapacity(length);
     for (int i = 0; i < length; ++i)
-      elementsArray.put(i, itemFactory.apply(i));
+      elementIndexMap.put(i, itemFactory.apply(i));
     return this;
   }
 
@@ -105,7 +113,7 @@ public class InventoryStorageLayer extends InventoryContentView implements Itera
   @CanIgnoreReturnValue
   public InventoryStorageLayer fillTop(@Nullable InventoryItem item) {
     for (int i = getDimensions().getWidth(); i > 0; --i)
-      elementsArray.put(i - 1, item);
+      elementIndexMap.put(i - 1, item);
     return this;
   }
 
@@ -115,7 +123,7 @@ public class InventoryStorageLayer extends InventoryContentView implements Itera
     int width = dim.getWidth();
     int fromIndex = dim.size() - width;
     for (int i = 0; i < width; ++i)
-      elementsArray.put(fromIndex + i, item);
+      elementIndexMap.put(fromIndex + i, item);
     return this;
   }
 
@@ -137,12 +145,12 @@ public class InventoryStorageLayer extends InventoryContentView implements Itera
 
       @Override
       public boolean hasNext() {
-        return cursor < Math.min(getArea().size(), elementsArray.capacity());
+        return cursor < Math.min(getArea().size(), elementIndexMap.capacity());
       }
 
       @Override
       public @Nullable InventoryItem next() {
-        return elementsArray.get(cursor++);
+        return elementIndexMap.get(cursor++);
       }
     };
   }

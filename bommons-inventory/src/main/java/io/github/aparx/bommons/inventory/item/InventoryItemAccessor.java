@@ -1,6 +1,7 @@
 package io.github.aparx.bommons.inventory.item;
 
 import io.github.aparx.bommons.ticks.ticker.Ticker;
+import org.bukkit.inventory.Inventory;
 
 /**
  * @author aparx (Vinzent Z.)
@@ -8,6 +9,10 @@ import io.github.aparx.bommons.ticks.ticker.Ticker;
  * @since 1.0
  */
 public interface InventoryItemAccessor {
+
+  String getTitle();
+
+  Inventory getInventory();
 
   Ticker getUpdateTicker();
 

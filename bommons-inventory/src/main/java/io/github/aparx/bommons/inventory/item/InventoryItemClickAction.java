@@ -11,14 +11,14 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 @FunctionalInterface
 public interface InventoryItemClickAction {
 
-  InventoryItemClickAction CANCELLING = (e) -> e.setCancelled(true);
+  InventoryItemClickAction CANCELLING = (i, e) -> e.setCancelled(true);
 
-  void handleClick(@NonNull InventoryClickEvent event);
+  void handleClick(@NonNull InventoryItem item, @NonNull InventoryClickEvent event);
 
   default InventoryItemClickAction andThen(InventoryItemClickAction action) {
-    return (action != null ? (event) -> {
-      this.handleClick(event);
-      action.handleClick(event);
+    return (action != null ? (item, event) -> {
+      this.handleClick(item, event);
+      action.handleClick(item, event);
     } : this);
   }
 

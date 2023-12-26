@@ -157,6 +157,15 @@ public class IndexMap<E> implements Iterable<IndexMap.Entry<E>>, Cloneable {
     putAll(iterable, 0);
   }
 
+  public void putAll(IndexMap<? extends E> map, int indexOffset) {
+    ensureCapacity(indexOffset + map.size());
+    map.forEach((entry) -> put(indexOffset + entry.getIndex(), entry.getValue()));
+  }
+
+  public void putAll(IndexMap<? extends E> map) {
+    putAll(map, 0);
+  }
+
   @CanIgnoreReturnValue
   public @Nullable E remove(int index) {
     Preconditions.checkElementIndex(index, size());

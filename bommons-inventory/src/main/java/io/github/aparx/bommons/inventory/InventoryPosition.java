@@ -144,7 +144,7 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
 
   /**
    * Returns a new position that is set relative to {@code section}'s boundaries, such that a
-   * returning zero position would represent the farthest top left corner within a matrix of
+   * returning zero position would represent the closest top left corner within a matrix of
    * {@code section} (so the beginning position).
    *
    * @param section the section to make this position relative to
@@ -162,13 +162,13 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
   }
 
   @CheckReturnValue
-  public InventoryPosition shift(int shiftOffset, int width) {
-    return ofIndex(getIndex() + shiftOffset, width);
+  public InventoryPosition shift(int indexOffset, int width) {
+    return ofIndex(getIndex() + indexOffset, width);
   }
 
   @CheckReturnValue
-  public InventoryPosition shift(int shiftOffset) {
-    return shift(shiftOffset, width);
+  public InventoryPosition shift(int indexOffset) {
+    return shift(indexOffset, width);
   }
 
   @CheckReturnValue

@@ -4,7 +4,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import io.github.aparx.bommons.item.ItemStackSupplier;
 import io.github.aparx.bommons.item.WrappedItemStack;
-import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -29,33 +29,51 @@ public final class InventoryItemFactory {
   }
 
   public static InventoryItemBuilder builder(InventoryItem source) {
-    return new InventoryItemBuilder().item(source::get).setClickHandle(source);
+    return new InventoryItemBuilder().item(source::get).setClickHandler(source);
   }
 
-  public static InventoryItem of(@Nullable ItemStack itemStack) {
+  public static MutableInventoryItem of(@Nullable ItemStack itemStack) {
     return builder().item(itemStack).build();
   }
 
-  public static InventoryItem of(@Nullable WrappedItemStack itemStack) {
+  public static MutableInventoryItem of(@Nullable WrappedItemStack itemStack) {
     return builder().item(itemStack).build();
   }
 
-  public static InventoryItem ofCancelled(@Nullable ItemStack itemStack) {
+  public static MutableInventoryItem ofCancelled(@Nullable ItemStack itemStack) {
     return builder().item(itemStack).cancel().build();
   }
 
-  public static InventoryItem ofCancelled(@Nullable WrappedItemStack itemStack) {
+  public static MutableInventoryItem ofCancelled(@Nullable WrappedItemStack itemStack) {
     return builder().item(itemStack).cancel().build();
   }
 
-  public static InventoryItem ofClickable(
+  public static MutableInventoryItem ofCancelled(Material material) {
+    return ofCancelled(new ItemStack(material));
+  }
+
+  public static MutableInventoryItem ofCancelled(Material material, int amount) {
+    return ofCancelled(new ItemStack(material, amount));
+  }
+
+  public static MutableInventoryItem ofClickable(
       @Nullable ItemStack itemStack, @Nullable InventoryItemClickAction clickAction) {
-    return builder().item(itemStack).setClickHandle(clickAction).build();
+    return builder().item(itemStack).setClickHandler(clickAction).build();
   }
 
-  public static InventoryItem ofClickable(
+  public static MutableInventoryItem ofClickable(
       @Nullable WrappedItemStack itemStack, @Nullable InventoryItemClickAction clickAction) {
-    return builder().item(itemStack).setClickHandle(clickAction).build();
+    return builder().item(itemStack).setClickHandler(clickAction).build();
+  }
+
+  public static MutableInventoryItem ofClickable(
+      Material material, @Nullable InventoryItemClickAction clickAction) {
+    return ofClickable(new ItemStack(material), clickAction);
+  }
+
+  public static MutableInventoryItem ofClickable(
+      Material material, int amount, @Nullable InventoryItemClickAction clickAction) {
+    return ofClickable(new ItemStack(material, amount), clickAction);
   }
 
   public static class InventoryItemBuilder {
@@ -65,20 +83,20 @@ public final class InventoryItemFactory {
     protected InventoryItemBuilder() {}
 
     @CanIgnoreReturnValue
-    public InventoryItemBuilder setClickHandle(@Nullable InventoryItemClickAction action) {
+    public InventoryItemBuilder setClickHandler(@Nullable InventoryItemClickAction action) {
       this.clickAction = action;
       return this;
     }
 
     @CanIgnoreReturnValue
-    public InventoryItemBuilder addClickHandle(@Nullable InventoryItemClickAction action) {
+    public InventoryItemBuilder addClickHandler(@Nullable InventoryItemClickAction action) {
       this.clickAction = (clickAction != null ? clickAction.andThen(action) : action);
       return this;
     }
 
     @CanIgnoreReturnValue
     public InventoryItemBuilder cancel() {
-      return addClickHandle(InventoryItemClickAction.CANCELLING);
+      return addClickHandler(InventoryItemClickAction.CANCELLING);
     }
 
     @CanIgnoreReturnValue
@@ -107,21 +125,10 @@ public final class InventoryItemFactory {
     }
 
     @CheckReturnValue
-    public InventoryItem build() {
-      // copy pointers to avoid mutation of returning item on mutation of this builder
-      @Nullable Function<InventoryItemAccessor, @Nullable ItemStack> factory = itemFactory;
-      @Nullable InventoryItemClickAction clickAction = this.clickAction;
-      return new InventoryItem() {
-        @Override
-        public @Nullable ItemStack get(@NonNull InventoryItemAccessor accessor) {
-          return (factory != null ? factory.apply(accessor) : null);
-        }
-
-        @Override
-        public void handleClick(@NonNull InventoryClickEvent event) {
-          if (clickAction != null) clickAction.handleClick(event);
-        }
-      };
+    public MutableInventoryItem build() {
+      MutableInventoryItem inventoryItem = new MutableInventoryItem(itemFactory);
+      inventoryItem.setClickHandler(clickAction);
+      return inventoryItem;
     }
   }
 

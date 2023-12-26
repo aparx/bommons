@@ -28,12 +28,16 @@ public abstract class InventoryContentView {
     this.area = area;
   }
 
+  /**
+   * Returns the area of {@code view}, or null if it is null.
+   *
+   * @param view the view to get the area from
+   * @return null if {@code view} is null, otherwise it's area
+   * @see InventoryContentView#getArea()
+   */
   public static @Nullable InventorySection getArea(@Nullable InventoryContentView view) {
     return (view != null ? view.getArea() : null);
   }
-
-  // TODO consider implementing
-  // public void update() {}
 
   public abstract @Nullable InventoryItem get(
       @Nullable InventoryItemAccessor accessor, InventoryPosition position);

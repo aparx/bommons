@@ -1,6 +1,8 @@
 package io.github.aparx.bommons.inventory.custom.content.pagination;
 
 /**
+ *
+ *
  * @author aparx (Vinzent Z.)
  * @version 2023-12-25 04:09
  * @since 1.0

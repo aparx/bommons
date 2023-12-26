@@ -41,14 +41,17 @@ public class CustomInventoryListener implements Listener {
     int slot = event.getSlot();
     if (slot >= 0 && event.getSlotType() == InventoryType.SlotType.CONTAINER) {
       @Nullable CustomInventory thisInventory = this.inventory.get();
+      //noinspection deprecation
       if (thisInventory != null && thisInventory.isViewer(player)
           && event.getInventory().equals(thisInventory.getInventory())) {
         @Nullable InventoryContentView content = thisInventory.getContent();
         if (content == null) return;
         @Nullable InventoryItem inventoryItem = content.get(thisInventory,
             InventoryPosition.ofIndex(slot, content.getDimensions().getWidth()));
-        if (inventoryItem != null)
-          inventoryItem.handleClick(event);
+        if (inventoryItem != null) {
+          inventoryItem.handleClick(inventoryItem, event);
+          thisInventory.renderInventory(false); // force re-render due to click
+        }
       } else if (thisInventory != null)
         HandlerList.unregisterAll(this);
     }

@@ -9,6 +9,7 @@ import io.github.aparx.bommons.inventory.item.InventoryItemAccessor;
 import io.github.aparx.bommons.ticks.TickDuration;
 import io.github.aparx.bommons.ticks.ticker.DefaultTicker;
 import io.github.aparx.bommons.ticks.ticker.Ticker;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -20,6 +21,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,22 +38,28 @@ public class CustomInventory implements InventoryItemAccessor {
 
   private final Plugin plugin;
   private final TickDuration updateInterval;
+  /** Similar to Bukkit's viewer list, this is for internal registry only */
   private final WeakHashSet<Player> viewers = new WeakHashSet<>();
   private final Ticker updateTicker;
-  private final String title;
 
   /** Current update task running for all viewers */
   protected @Nullable BukkitTask task;
   protected @Nullable InventoryContentView content;
   protected @Nullable Inventory inventory;
 
+  private @Nullable String title;
+
   protected final CustomInventoryListener listener = new CustomInventoryListener(this);
 
-  public CustomInventory(Plugin plugin, String title) {
+  public CustomInventory(Plugin plugin) {
+    this(plugin, null);
+  }
+
+  public CustomInventory(Plugin plugin, @Nullable String title) {
     this(plugin, TickDuration.ofNil(), title);
   }
 
-  public CustomInventory(Plugin plugin, TickDuration updateInterval, String title) {
+  public CustomInventory(Plugin plugin, TickDuration updateInterval, @Nullable String title) {
     Preconditions.checkNotNull(plugin, "Plugin must not be null");
     Preconditions.checkNotNull(updateInterval, "Interval must not be null");
     this.plugin = plugin;
@@ -60,29 +68,70 @@ public class CustomInventory implements InventoryItemAccessor {
     this.title = title;
   }
 
-  public void updateContent(InventoryContentView content) {
+  public final @Nullable InventoryContentView getContent() {
+    return content;
+  }
+
+  public final @Nullable String getTitle() {
+    return title;
+  }
+
+  public final Plugin getPlugin() {
+    return plugin;
+  }
+
+  public void updateContent(InventoryContentView content, @Nullable String title) {
     Preconditions.checkNotNull(content, "Content must not be null");
-    @Nullable InventoryDimensions currentInventoryDimensions = (
+    Preconditions.checkArgument(
+        content.getArea().getBegin().getIndex() == 0,
+        "Root content must have no offset (begin must be {0, 0})");
+    @Nullable InventoryDimensions currentDimensions = (
         this.content != null ? this.content.getDimensions() : null);
     this.content = content;
-    if (!Objects.equals(currentInventoryDimensions, content.getDimensions()))
-      createInventory();
+    if (Objects.equals(title, this.title) &&
+        Objects.equals(currentDimensions, content.getDimensions()))
+      renderInventory(false); // force re-render
+    else createInventory(title);
+    this.title = title;
+  }
+
+  public void updateContent(InventoryContentView content) {
+    updateContent(content, this.title);
+  }
+
+  public void updateTitle(@Nullable String title) {
+    Preconditions.checkNotNull(content, "Content must not be null");
+    updateContent(content, title);
+  }
+
+  @CanIgnoreReturnValue
+  public boolean show(Player... players) {
+    if (ArrayUtils.isNotEmpty(players))
+      return show(Arrays.asList(players));
+    return false;
+  }
+
+  @CanIgnoreReturnValue
+  public boolean show(Iterable<? extends Player> viewers) {
+    Preconditions.checkNotNull(viewers, "Viewers must not be null");
+    if (inventory == null) createInventory(getTitle());
+    int viewerCount = 0;
+    boolean success = false;
+    for (Player viewer : viewers) {
+      Preconditions.checkNotNull(viewer, "Viewer is null");
+      success |= this.viewers.add(viewer);
+      viewer.openInventory(inventory);
+      ++viewerCount;
+    }
+    if (viewerCount != 0)
+      start();
+    return success;
   }
 
   @CanIgnoreReturnValue
   public boolean show(Player viewer) {
     Preconditions.checkNotNull(viewer, "Viewer must not be null");
-    if (inventory == null) createInventory();
-    synchronized (lock) {
-      if (!viewers.add(viewer)) {
-        viewer.openInventory(inventory);
-        return false;
-      }
-      renderInventory(false);
-      start(); // ensure render update-task start
-      viewer.openInventory(inventory);
-      return true;
-    }
+    return show(List.of(viewer));
   }
 
   @CanIgnoreReturnValue
@@ -169,17 +218,24 @@ public class CustomInventory implements InventoryItemAccessor {
     return false;
   }
 
-  private void createInventory() {
+  private void createInventory(@Nullable String title) {
     Preconditions.checkNotNull(content, "Content is undefined");
     updateTicker.reset(); // reset first, to avoid automatic `checkForViewers`
-    this.inventory = Bukkit.createInventory(null, content.getDimensions().size(), title);
+    this.inventory = (title != null
+        ? Bukkit.createInventory(null, content.getDimensions().size(), title)
+        : Bukkit.createInventory(null, content.getDimensions().size()));
+    renderInventory(false); // force re-render
     viewers.forEach((viewer) -> viewer.openInventory(inventory));
   }
 
-  public @Nullable InventoryContentView getContent() {
-    return content;
-  }
-
+  /**
+   * @deprecated Usage of {@code getInventory} is not advised, since showing the inventory
+   * manually to other players using the returning inventory will not trigger the internal
+   * scheduler or listener to be created and updated. The usage of the "raw" inventory for other
+   * reasons, should be totally valid.
+   */
+  @Deprecated
+  @SuppressWarnings("DeprecatedIsStillUsed")
   public @Nullable Inventory getInventory() {
     return inventory;
   }
@@ -197,11 +253,4 @@ public class CustomInventory implements InventoryItemAccessor {
     return updateTicker;
   }
 
-  public String getTitle() {
-    return title;
-  }
-
-  public Plugin getPlugin() {
-    return plugin;
-  }
 }

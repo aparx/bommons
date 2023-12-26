@@ -111,6 +111,24 @@ public class InventorySection implements Iterable<InventoryPosition> {
     return includes(section.getBegin()) && includes(section.getEnd());
   }
 
+  // +------------------ Position utilities ------------------+
+
+  public InventoryPosition rowCenter() {
+    return InventoryPosition.ofPoint(0, begin.getRow() + (dimensions.getHeight()) / 2);
+  }
+
+  public InventoryPosition columnCenter() {
+    return InventoryPosition.ofPoint(begin.getColumn() + (dimensions.getWidth()) / 2, 0);
+  }
+
+  public InventoryPosition center() {
+    return InventoryPosition.ofPoint(
+        begin.getColumn() + (dimensions.getWidth()) / 2,
+        begin.getRow() + (dimensions.getHeight()) / 2);
+  }
+
+  // +------------------ Iterator and getters ------------------+
+
   /**
    * Returns an immutable collection of all positions within this section.
    * <p>The returned value is memoized, such that the allocation is only done once for this section.

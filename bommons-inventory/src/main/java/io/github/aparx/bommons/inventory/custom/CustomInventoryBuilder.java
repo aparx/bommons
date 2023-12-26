@@ -6,15 +6,13 @@ import com.google.errorprone.annotations.CheckReturnValue;
 import io.github.aparx.bommons.inventory.InventoryDimensions;
 import io.github.aparx.bommons.inventory.custom.content.InventoryLayerGroup;
 import io.github.aparx.bommons.inventory.custom.content.InventoryStorageLayer;
-import io.github.aparx.bommons.inventory.custom.content.pagination.InventoryDynamicPageGroup;
-import io.github.aparx.bommons.inventory.custom.content.pagination.InventoryPageGroup;
 import io.github.aparx.bommons.ticks.TickDuration;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * @author aparx (Vinzent Z.)
@@ -24,9 +22,10 @@ import java.util.function.Consumer;
 @DefaultQualifier(NonNull.class)
 public final class CustomInventoryBuilder {
 
-  private String title = "Custom Inventory";
+  private @Nullable String title;
   private @Nullable TickDuration updateInterval;
   private @Nullable InventoryContentView content;
+  private @Nullable BiConsumer<CustomInventory, ? extends InventoryContentView> populator;
 
   private CustomInventoryBuilder() {}
 
@@ -35,13 +34,12 @@ public final class CustomInventoryBuilder {
   }
 
   @CanIgnoreReturnValue
-  public CustomInventoryBuilder title(String title) {
-    Preconditions.checkNotNull(title, "Title must not be null");
+  public CustomInventoryBuilder title(@Nullable String title) {
     this.title = title;
     return this;
   }
 
-  public String getTitle() {
+  public @Nullable String getTitle() {
     return title;
   }
 
@@ -55,54 +53,72 @@ public final class CustomInventoryBuilder {
     return updateInterval;
   }
 
+  /** @see #populate(InventoryContentView, BiConsumer) */
   @CanIgnoreReturnValue
-  public CustomInventoryBuilder withContent(@Nullable InventoryContentView content) {
+  public CustomInventoryBuilder populate(InventoryContentView content) {
+    return populate(content, null);
+  }
+
+  /**
+   * Populates the built inventory with given {@code content}.
+   * <p>The provided {@code populator} is called on build to fill the content.
+   * <p>If {@code content} is an instance of {@link CopyableInventoryContentView}, the inventory
+   * will be copied and then populated through {@code populator} (if not-null).
+   * <p>Following is the order for default builds of custom inventories:
+   * <ol>
+   *   <li>Allocation of {@link CustomInventory}</li>
+   *   <li>Content copy (if instance of {@link CopyableInventoryContentView})</li>
+   *   <li>Content population (if {@code populator} is not-null)</li>
+   *   <li>Content push (through {@link CustomInventory#updateContent(InventoryContentView)})</li>
+   * </ol>
+   *
+   * @param content   the new content of the inventory
+   * @param populator the populator, called upon creation of the inventory (optional)
+   * @param <T>       the type of content view
+   * @return this builder instance
+   * @see InventoryContentFactory
+   * @see CustomInventory
+   * @see InventoryContentView
+   * @see CopyableInventoryContentView
+   * @see CustomInventory#updateContent(InventoryContentView)
+   */
+  @CanIgnoreReturnValue
+  public <T extends InventoryContentView> CustomInventoryBuilder populate(
+      T content, @Nullable BiConsumer<CustomInventory, T> populator) {
+    Preconditions.checkNotNull(content, "Content must not be null");
     this.content = content;
+    this.populator = populator;
     return this;
   }
 
   @CanIgnoreReturnValue
-  public CustomInventoryBuilder withLayerContent(
-      InventoryDimensions dimensions, @Nullable Consumer<InventoryLayerGroup> populator) {
-    InventoryLayerGroup layerGroup = InventoryContentFactory.layerGroup(dimensions);
-    if (populator != null) populator.accept(layerGroup);
-    return withContent(layerGroup);
-  }
-
-  @CanIgnoreReturnValue
-  public CustomInventoryBuilder withStorageContent(
-      InventoryDimensions dimensions, @Nullable Consumer<InventoryStorageLayer> populator) {
-    InventoryStorageLayer storageLayer = InventoryContentFactory.storageLayer(dimensions);
-    if (populator != null) populator.accept(storageLayer);
-    return withContent(storageLayer);
-  }
-
-  @CanIgnoreReturnValue
-  public CustomInventoryBuilder withPageGroup(
-      InventoryDimensions dimensions, @Nullable Consumer<InventoryPageGroup> populator) {
-    InventoryPageGroup pageGroup = InventoryContentFactory.pageGroup(dimensions);
-    if (populator != null) populator.accept(pageGroup);
-    return withContent(pageGroup);
-  }
-
-  @CanIgnoreReturnValue
-  public CustomInventoryBuilder withDynamicPageGroup(
-      InventoryDimensions dimensions, @Nullable Consumer<InventoryDynamicPageGroup> populator) {
-    InventoryDynamicPageGroup pageGroup = InventoryContentFactory.dynamicPageGroup(dimensions);
-    if (populator != null) populator.accept(pageGroup);
-    return withContent(pageGroup);
+  public CustomInventoryBuilder populate(
+      InventoryDimensions dimensions,
+      @Nullable BiConsumer<CustomInventory, InventoryStorageLayer> populator) {
+    return populate(InventoryContentFactory.storageLayer(dimensions), populator);
   }
 
   public @Nullable InventoryContentView getContent() {
     return content;
   }
 
+  public @Nullable BiConsumer<CustomInventory, ? extends InventoryContentView> getPopulator() {
+    return populator;
+  }
+
   @CheckReturnValue
+  @SuppressWarnings({"rawtypes", "unchecked"})
   public CustomInventory build(Plugin plugin) {
     CustomInventory inventory = (updateInterval != null
         ? new CustomInventory(plugin, updateInterval, title)
         : new CustomInventory(plugin, title));
-    if (content != null) inventory.updateContent(content);
+    @Nullable InventoryContentView content = this.content;
+    Preconditions.checkNotNull(content, "Content should be defined");
+    if (content instanceof CopyableInventoryContentView)
+      content = ((CopyableInventoryContentView) content).copy();
+    if (populator != null)
+      ((BiConsumer) populator).accept(inventory, content);
+    inventory.updateContent(content);
     return inventory;
   }
 

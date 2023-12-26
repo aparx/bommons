@@ -4,19 +4,16 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import io.github.aparx.bommons.inventory.InventoryPosition;
 import io.github.aparx.bommons.inventory.InventorySection;
+import io.github.aparx.bommons.inventory.custom.CopyableInventoryContentView;
 import io.github.aparx.bommons.inventory.custom.InventoryContentView;
 import io.github.aparx.bommons.inventory.item.InventoryItem;
 import io.github.aparx.bommons.inventory.item.InventoryItemAccessor;
-import io.github.aparx.bommons.inventory.item.InventoryItemFactory;
-import io.github.aparx.bommons.item.ItemStackBuilders;
-import org.apache.commons.lang3.StringUtils;
-import org.bukkit.Material;
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.Iterator;
 
 /**
@@ -28,77 +25,50 @@ import java.util.Iterator;
  * @since 1.0
  */
 @DefaultQualifier(NonNull.class)
-public class InventoryPageGroup extends InventoryContentView implements Iterable<InventoryContentView> {
-
-  private static final InventoryItem DEFAULT_PREVIOUS_PAGE = InventoryItemFactory.builder()
-      .item(ItemStackBuilders.create(Material.ARROW).name("Previous").build()).cancel().build();
-
-  private static final InventoryItem DEFAULT_NEXT_PAGE = InventoryItemFactory.builder()
-      .item(ItemStackBuilders.create(Material.ARROW).name("Next").build()).cancel().build();
-
-  private static final InventoryItem NO_PAGINATION = InventoryItemFactory.builder()
-      .item(ItemStackBuilders.create(Material.BLACK_STAINED_GLASS_PANE)
-          .name(StringUtils.SPACE).build()).cancel().build();
-
-  private final EnumMap<PaginationItemType, PaginationItem>
-      paginationItems = new EnumMap<>(PaginationItemType.class);
+public class InventoryPageGroup extends CopyableInventoryContentView implements Iterable<InventoryContentView> {
 
   private final ArrayList<InventoryContentView> pages = new ArrayList<>();
 
-  private @Nullable InventoryItem noPaginationItem = NO_PAGINATION;
+  private final PaginationItemHandler itemHandler;
 
-  private int pageIndex;
+  private @NonNegative int pageIndex;
 
   public InventoryPageGroup(InventorySection area, @Nullable InventorySection parent) {
     super(area, parent);
-    setPaginationItem(PaginationItemType.PREVIOUS_PAGE,
-        fromRelative(InventoryPosition.ofLast(area))
-            .shift(1 - area.getDimensions().getWidth()),
-        DEFAULT_PREVIOUS_PAGE);
-    setPaginationItem(PaginationItemType.NEXT_PAGE,
-        fromRelative(InventoryPosition.ofLast(area)),
-        DEFAULT_NEXT_PAGE);
+    this.itemHandler = new PaginationItemHandler(this);
   }
 
-  public void setPaginationItem(PaginationItemType type, InventoryItem item) {
-    Preconditions.checkNotNull(item, "Item must not be null");
-    Preconditions.checkState(paginationItems.containsKey(type));
-    setPaginationItem(type, paginationItems.get(type).getAbsolutePosition(), item);
+  @Override
+  public InventoryPageGroup copy() {
+    InventoryPageGroup pageGroup = new InventoryPageGroup(getArea(), getParent());
+    pageGroup.pages.addAll(pages);
+    return pageGroup;
   }
 
-  public void setPaginationItem(
-      PaginationItemType type, InventoryPosition absolutePosition, InventoryItem item) {
-    Preconditions.checkNotNull(item, "Item must not be null");
-    Preconditions.checkNotNull(absolutePosition, "Position must not be null");
-    Preconditions.checkArgument(getArea().includes(absolutePosition), "Position is outside group " +
-        "area");
-    paginationItems.put(type, new PaginationItem(type, absolutePosition,
-        InventoryItemFactory.builder(item)
-            .addClickHandle((event) -> paginate(type.getSkipType(), 1))
-            .build()));
-  }
-
-  public PaginationItem getPaginationItem(PaginationItemType type) {
-    return paginationItems.get(type);
-  }
-
-  public void setNoPaginationItem(@Nullable InventoryItem noPaginationItem) {
-    this.noPaginationItem = noPaginationItem;
-  }
-
-  public @Nullable InventoryItem getNoPaginationItem() {
-    return noPaginationItem;
+  /**
+   * Returns true if pagination is present.
+   * <p>This implicitly means that if the returning value is true, pagination items should be
+   * displayed for the user to walk through pages.
+   *
+   * @return true if pagination is apparent
+   * @implSpec The default implementation returns true if the page count is greater than one, as
+   * in there is multiple pages that can be paginated through.
+   */
+  public boolean hasPagination() {
+    return getPageCount() > 1;
   }
 
   @Override
   public @Nullable InventoryItem get(
       @Nullable InventoryItemAccessor accessor, InventoryPosition position) {
-    for (PaginationItemType type : PaginationItemType.values()) {
-      PaginationItem paginationItem = paginationItems.get(type);
-      if (position.getIndex() == paginationItem.getAbsolutePosition().getIndex())
-        return (has(type.getSkipType()) ? paginationItem.getItem() : noPaginationItem);
-    }
-    @Nullable InventoryContentView page = getPage();
+    if (hasPagination())
+      for (PaginationItemType type : PaginationItemType.values()) {
+        PaginationItemHandler.PaginationItem item = itemHandler.get(type);
+        if (position.getIndex() == item.getAbsolutePosition().getIndex())
+          return (hasSuccessor(type.getSkipType(), 1) ? item.getItem() :
+              itemHandler.getPlaceholder());
+      }
+    @Nullable InventoryContentView page = getCurrentPage();
     return (page != null ? page.get(accessor, position) : null);
   }
 
@@ -117,23 +87,21 @@ public class InventoryPageGroup extends InventoryContentView implements Iterable
     return pageIndex != newPageIndex && paginate(newPageIndex);
   }
 
-  public boolean has(PaginationSkipType type) {
-    switch (type) {
-      case NEXT:
-        return hasNextPage();
-      case PREVIOUS:
-        return hasPreviousPage();
-      default:
-        return false;
-    }
+  public boolean hasSuccessor(PaginationSkipType type, int multiplier) {
+    int target = pageIndex + multiplier * type.getFactor();
+    if (type == PaginationSkipType.NEXT)
+      return target >= 0 && target < pages.size();
+    if (type == PaginationSkipType.PREVIOUS)
+      return target >= 0 && !pages.isEmpty();
+    return false;
   }
 
   public boolean hasNextPage() {
-    return pageIndex < pages.size() - 1;
+    return hasSuccessor(PaginationSkipType.NEXT, 1);
   }
 
   public boolean hasPreviousPage() {
-    return pageIndex > 0 && !pages.isEmpty();
+    return hasSuccessor(PaginationSkipType.PREVIOUS, 1);
   }
 
   public void clear() {
@@ -153,10 +121,8 @@ public class InventoryPageGroup extends InventoryContentView implements Iterable
     return pages.get(index);
   }
 
-  public @Nullable InventoryContentView getPage() {
-    if (pageIndex >= 0 && pageIndex < pages.size())
-      return getPage(pageIndex);
-    return null;
+  public @Nullable InventoryContentView getCurrentPage() {
+    return (pageIndex < pages.size() ? getPage(pageIndex) : null);
   }
 
   public int getPageCount() {
@@ -165,6 +131,10 @@ public class InventoryPageGroup extends InventoryContentView implements Iterable
 
   public int getPageIndex() {
     return pageIndex;
+  }
+
+  public PaginationItemHandler getItemHandler() {
+    return itemHandler;
   }
 
   @Override
@@ -185,34 +155,5 @@ public class InventoryPageGroup extends InventoryContentView implements Iterable
     };
   }
 
-  public static class PaginationItem {
-    private final PaginationItemType type;
-    /** The position absolutely aligned (to the parent) */
-    private final InventoryPosition absolutePosition;
-    private final InventoryItem item;
 
-    public PaginationItem(
-        PaginationItemType type,
-        InventoryPosition absolutePosition,
-        InventoryItem item) {
-      Preconditions.checkNotNull(type, "Type must not be null");
-      Preconditions.checkNotNull(absolutePosition, "Position must not be null");
-      Preconditions.checkNotNull(item, "Item must not be null");
-      this.type = type;
-      this.absolutePosition = absolutePosition;
-      this.item = item;
-    }
-
-    public PaginationItemType getType() {
-      return type;
-    }
-
-    public InventoryPosition getAbsolutePosition() {
-      return absolutePosition;
-    }
-
-    public InventoryItem getItem() {
-      return item;
-    }
-  }
 }

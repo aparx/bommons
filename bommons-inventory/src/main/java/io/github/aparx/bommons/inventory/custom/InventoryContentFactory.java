@@ -9,6 +9,8 @@ import io.github.aparx.bommons.inventory.custom.content.pagination.InventoryDyna
 import io.github.aparx.bommons.inventory.custom.content.pagination.InventoryPageGroup;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.function.Consumer;
+
 /**
  * @author aparx (Vinzent Z.)
  * @version 2023-12-25 04:56
