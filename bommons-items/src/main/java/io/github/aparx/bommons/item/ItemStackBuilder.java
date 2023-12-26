@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
-import io.github.aparx.bommons.core.utils.ConversionUtil;
+import io.github.aparx.bommons.core.ObjectConversion;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Material;
@@ -83,14 +83,14 @@ public class ItemStackBuilder implements ConfigurationSerializable {
     this.amount(NumberConversions.toInt(args.get("amount")));
     this.name(Objects.toString(args.get("name"), null));
     if (args.containsKey("lore"))
-      this.lore(ConversionUtil.objectToStringList(args.get("lore")));
+      this.lore(ObjectConversion.objectToStringList(args.get("lore")));
     if (args.containsKey("flags"))
-      this.flags(ConversionUtil
-          .toEnumList(ItemFlag.class, ConversionUtil.objectToStringList(args.get("flags")))
+      this.flags(ObjectConversion
+          .toEnumList(ItemFlag.class, ObjectConversion.objectToStringList(args.get("flags")))
           .toArray(ItemFlag[]::new));
     if (args.containsKey("enchants")) {
       Map<Enchantment, Integer> enchants = new HashMap<>();
-      ConversionUtil.objectToStringObjectMap(args.get("enchants"), HashMap::new)
+      ObjectConversion.objectToStringObjectMap(args.get("enchants"), HashMap::new)
           .forEach((key, value) -> {
             if (key == null) return;
             @Nullable Enchantment byKey = Enchantment.getByKey(NamespacedKey.minecraft(key));
@@ -107,7 +107,7 @@ public class ItemStackBuilder implements ConfigurationSerializable {
   public static Material getSerializedType(String typeString) {
     @Nullable Material material = Material.getMaterial(typeString);
     if (material == null)
-      material = ConversionUtil.toEnum(Material.class, typeString);
+      material = ObjectConversion.toEnum(Material.class, typeString);
     return material;
   }
 
@@ -121,7 +121,7 @@ public class ItemStackBuilder implements ConfigurationSerializable {
       map.put("name", name);
     map.put("lore", getLore());
     if (ArrayUtils.isNotEmpty(flags))
-      map.put("flags", ConversionUtil.toStringCollection(flags, ArrayList::new));
+      map.put("flags", ObjectConversion.toStringCollection(flags, ArrayList::new));
     if (!enchants.isEmpty()) {
       Map<String, Object> enchants = new HashMap<>(this.enchants.size());
       this.enchants.forEach((enchantment, level) -> {

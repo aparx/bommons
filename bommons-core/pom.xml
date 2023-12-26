@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>bommons-items</artifactId>
+    <artifactId>bommons-core</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
@@ -17,13 +17,5 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>io.github.aparx</groupId>
-            <artifactId>bommons-core</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
 
 </project>

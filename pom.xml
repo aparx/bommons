@@ -6,22 +6,51 @@
 
     <groupId>io.github.aparx</groupId>
     <artifactId>bommons</artifactId>
-    <version>${revision}</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>bommons-items</module>
-        <module>bommons-commons</module>
-        <module>bommons-plugin</module>
+        <module>bommons-core</module>
         <module>bommons-ticks</module>
-        <module>bommons-inventory</module>
     </modules>
 
     <properties>
-        <revision>1.0-SNAPSHOT</revision>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${maven.compiler.target}</source>
+                        <target>${maven.compiler.target}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <inherited>false</inherited>
+                    <configuration>
+                        <aggregate>true</aggregate>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>aggregate</id>
+                            <goals>
+                                <goal>aggregate-jar</goal>
+                            </goals>
+                            <phase>package</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <repositories>
         <!-- This adds the Spigot Maven repository to the build -->

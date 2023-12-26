@@ -2,7 +2,7 @@ package io.github.aparx.bommons.ticks;
 
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
-import io.github.aparx.bommons.core.utils.ConversionUtil;
+import io.github.aparx.bommons.core.ObjectConversion;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.util.NumberConversions;
@@ -57,7 +57,7 @@ public final class TickDuration implements ConfigurationSerializable {
   public static TickDuration deserialize(Map<?, @Nullable ?> args) {
     String unitString = Objects.toString(args.get("unit"), null);
     Preconditions.checkNotNull(unitString, "Unit must not be null");
-    return of(ConversionUtil.toEnum(TickTimeUnit.class, unitString),
+    return of(ObjectConversion.toEnum(TickTimeUnit.class, unitString),
         NumberConversions.toLong(args.get("amount")));
   }
 
