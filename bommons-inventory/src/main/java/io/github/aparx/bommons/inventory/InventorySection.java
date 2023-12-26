@@ -56,12 +56,16 @@ public class InventorySection implements Iterable<InventoryPosition> {
         InventoryPosition.getMax(begin, end));
   }
 
+  public static InventorySection of(int fromX, int fromY, int toX, int toY) {
+    return of(InventoryPosition.ofPoint(fromX, fromY), InventoryPosition.ofPoint(toX, toY));
+  }
+
   public static InventorySection of(@NonNegative int fromIndex, @NonNegative int toIndex) {
     return of(InventoryPosition.ofIndex(fromIndex), InventoryPosition.ofIndex(toIndex));
   }
 
   public static InventorySection of(InventoryDimensions dimensions) {
-    return of(InventoryPosition.ofFirst(),
+    return of(InventoryPosition.ofZero(),
         InventoryPosition.ofIndex(dimensions.size() - 1, dimensions.getWidth()));
   }
 
@@ -148,11 +152,12 @@ public class InventorySection implements Iterable<InventoryPosition> {
       final int length = size();
       ImmutableList.Builder<InventoryPosition> builder =
           ImmutableList.builderWithExpectedSize(1 + length);
-      int xLength = end.getColumn() - begin.getColumn();
+      int beginColumn = begin.getColumn();
+      int xLength = end.getColumn() - beginColumn;
       int yLength = end.getRow() - begin.getRow();
       for (int x = 0; x <= xLength; ++x)
         for (int y = 0; y <= yLength; ++y)
-          builder.add(begin.add(x, y, 1 + xLength));
+          builder.add(begin.add(x, y, beginColumn + 1 + xLength));
       this.interpolation = builder.build();
       return this.interpolation;
     }

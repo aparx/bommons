@@ -9,7 +9,6 @@ import io.github.aparx.bommons.inventory.InventorySection;
 import io.github.aparx.bommons.inventory.custom.CopyableInventoryContentView;
 import io.github.aparx.bommons.inventory.item.InventoryItem;
 import io.github.aparx.bommons.inventory.item.InventoryItemAccessor;
-import io.github.aparx.bommons.inventory.custom.InventoryContentView;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -58,7 +57,7 @@ public class InventoryStorageLayer extends CopyableInventoryContentView implemen
 
   @CanIgnoreReturnValue
   public @Nullable InventoryItem set(InventoryPosition position, @Nullable InventoryItem item) {
-    int elementIndex = toAreaElementIndex(position);
+    int elementIndex = toAreaElementIndex(toAbsolute(position));
     if (elementIndex < 0)
       throw new IllegalArgumentException("Position is outside the view");
     return elementIndexMap.put(elementIndex, item);
@@ -86,56 +85,62 @@ public class InventoryStorageLayer extends CopyableInventoryContentView implemen
     elementIndexMap.clear();
   }
 
-  @CanIgnoreReturnValue
-  public InventoryStorageLayer fill(IntFunction<@Nullable InventoryItem> itemFactory) {
+  public void fill(IntFunction<@Nullable InventoryItem> itemFactory) {
     final int length = getArea().size();
     elementIndexMap.ensureCapacity(length);
     for (int i = 0; i < length; ++i)
       elementIndexMap.put(i, itemFactory.apply(i));
-    return this;
   }
 
-  @CanIgnoreReturnValue
-  public InventoryStorageLayer fill(@Nullable InventoryItem item) {
-    return fill((index) -> item);
+  public void fill(@Nullable InventoryItem item) {
+    fill((index) -> item);
   }
 
-  @CanIgnoreReturnValue
-  public InventoryStorageLayer fillEdges(@Nullable InventoryItem item) {
+  public void fillEdges(@Nullable InventoryItem item) {
     int height = getDimensions().getHeight();
     if (height >= 1)
       fillTop(item);
     if (height >= 2)
       fillBottom(item);
-    return fillSides(item);
+    fillSides(item);
   }
 
-  @CanIgnoreReturnValue
-  public InventoryStorageLayer fillTop(@Nullable InventoryItem item) {
+  public void fillTop(@Nullable InventoryItem item) {
     for (int i = getDimensions().getWidth(); i > 0; --i)
       elementIndexMap.put(i - 1, item);
-    return this;
   }
 
-  @CanIgnoreReturnValue
-  public InventoryStorageLayer fillBottom(@Nullable InventoryItem item) {
+  public void fillBottom(@Nullable InventoryItem item) {
     InventoryDimensions dim = getDimensions();
     int width = dim.getWidth();
     int fromIndex = dim.size() - width;
     for (int i = 0; i < width; ++i)
       elementIndexMap.put(fromIndex + i, item);
-    return this;
   }
 
-  @CanIgnoreReturnValue
-  public InventoryStorageLayer fillSides(@Nullable InventoryItem item) {
+  public void fillSides(@Nullable InventoryItem item) {
     InventoryDimensions dim = getDimensions();
     int width = dim.getWidth(), height = dim.getHeight();
     for (int row = 0; row < height; ++row) {
       set(InventoryPosition.ofPoint(0, row, width), item);
       set(InventoryPosition.ofPoint(width - 1, row, width), item);
     }
-    return this;
+  }
+
+  public void fillLeft(@Nullable InventoryItem item) {
+    InventoryDimensions dim = getDimensions();
+    int width = dim.getWidth(), height = dim.getHeight();
+    for (int row = 0; row < height; ++row) {
+      set(InventoryPosition.ofPoint(0, row, width), item);
+    }
+  }
+
+  public void fillRight(@Nullable InventoryItem item) {
+    InventoryDimensions dim = getDimensions();
+    int width = dim.getWidth(), height = dim.getHeight();
+    for (int row = 0; row < height; ++row) {
+      set(InventoryPosition.ofPoint(width - 1, row, width), item);
+    }
   }
 
   @Override

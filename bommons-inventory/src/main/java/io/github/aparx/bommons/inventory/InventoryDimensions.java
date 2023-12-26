@@ -18,6 +18,8 @@ import java.util.function.IntConsumer;
 @DefaultQualifier(NonNull.class)
 public final class InventoryDimensions implements ConfigurationSerializable {
 
+  public static final InventoryDimensions DEFAULT_DIMENSIONS = InventoryDimensions.ofHeight(4);
+
   public static final int DEFAULT_WIDTH = 9;
 
   /** The width (or column-length) of the inventory */

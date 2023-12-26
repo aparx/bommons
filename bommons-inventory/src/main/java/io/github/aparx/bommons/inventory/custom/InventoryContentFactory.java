@@ -1,6 +1,5 @@
 package io.github.aparx.bommons.inventory.custom;
 
-import com.google.common.base.Preconditions;
 import io.github.aparx.bommons.inventory.InventoryDimensions;
 import io.github.aparx.bommons.inventory.InventorySection;
 import io.github.aparx.bommons.inventory.custom.content.InventoryLayerGroup;
@@ -8,8 +7,6 @@ import io.github.aparx.bommons.inventory.custom.content.InventoryStorageLayer;
 import io.github.aparx.bommons.inventory.custom.content.pagination.InventoryDynamicPageGroup;
 import io.github.aparx.bommons.inventory.custom.content.pagination.InventoryPageGroup;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.function.Consumer;
 
 /**
  * @author aparx (Vinzent Z.)

@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import io.github.aparx.bommons.inventory.InventoryDimensions;
-import io.github.aparx.bommons.inventory.custom.content.InventoryLayerGroup;
 import io.github.aparx.bommons.inventory.custom.content.InventoryStorageLayer;
 import io.github.aparx.bommons.ticks.TickDuration;
 import org.bukkit.plugin.Plugin;

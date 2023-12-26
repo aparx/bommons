@@ -157,7 +157,7 @@ public class InventoryDynamicPageGroup extends CopyableInventoryContentView {
     int[] excludeIndices = new int[types.length];
     for (int i = 0; i < types.length; ++i)
       excludeIndices[i] = group.getItemHandler().get(types[i])
-          .getAbsolutePosition().relative(getArea()).getIndex();
+          .getAbsolutePosition().toRelative(getArea()).getIndex();
     return excludeIndices;
   }
 

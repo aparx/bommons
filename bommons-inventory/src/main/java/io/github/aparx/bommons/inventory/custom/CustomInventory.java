@@ -84,7 +84,7 @@ public class CustomInventory implements InventoryItemAccessor {
     Preconditions.checkNotNull(content, "Content must not be null");
     Preconditions.checkArgument(
         content.getArea().getBegin().getIndex() == 0,
-        "Root content must have no offset (begin must be {0, 0})");
+        "Root content must have no offset: begin must be (0, 0)");
     @Nullable InventoryDimensions currentDimensions = (
         this.content != null ? this.content.getDimensions() : null);
     this.content = content;

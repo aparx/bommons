@@ -45,26 +45,28 @@ public final class PaginationItemHandler {
     this.group = group;
     InventoryPosition lastPosition = InventoryPosition.ofLast(group.getArea());
     set(PaginationItemType.PREVIOUS_PAGE,
-        group.fromRelative(lastPosition)
-            .shift(1 - group.getArea().getDimensions().getWidth()),
+        lastPosition.shift(1 - group.getArea().getDimensions().getWidth()),
         DEFAULT_PREVIOUS_PAGE);
-    set(PaginationItemType.NEXT_PAGE,
-        group.fromRelative(lastPosition),
-        DEFAULT_NEXT_PAGE);
+    set(PaginationItemType.NEXT_PAGE, lastPosition, DEFAULT_NEXT_PAGE);
     setPlaceholder(DEFAULT_PLACEHOLDER);
+  }
+
+  public void set(PaginationItemType type, PaginationItem item) {
+    set(type, item.getAbsolutePosition(), item.getItem());
   }
 
   public void set(PaginationItemType type, InventoryItem item) {
     set(type, items.get(type).getAbsolutePosition(), item);
   }
 
-  public void set(PaginationItemType type, InventoryPosition absolute, InventoryItem item) {
+  public void set(PaginationItemType type, InventoryPosition relative, InventoryItem item) {
     Preconditions.checkNotNull(type, "Type must not be null");
-    Preconditions.checkNotNull(absolute, "Position must not be null");
+    Preconditions.checkNotNull(relative, "Position must not be null");
     Preconditions.checkNotNull(item, "Item must not be null");
-    items.put(type, new PaginationItem(type, absolute, InventoryItemFactory.builder(item)
-        .addClickHandler((__, event) -> group.paginate(type.getSkipType(), 1))
-        .build()));
+    items.put(type, new PaginationItem(type, group.toAbsolute(relative),
+        InventoryItemFactory.builder(item)
+            .addClickHandler((__, event) -> group.paginate(type.getSkipType(), 1))
+            .build()));
   }
 
   public PaginationItem get(PaginationItemType type) {

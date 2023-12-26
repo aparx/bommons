@@ -33,4 +33,15 @@ public class TestInventorySection {
     Assert.assertEquals(section.subsection(1, 3), section.subsection(1));
   }
 
+  @Test
+  public void testCenter() {
+    InventorySection pos = InventorySection.of(InventoryPosition.ofPoint(1, 1),
+        InventoryPosition.ofPoint(3, 3));
+    // Matrix:
+    // [ ][ ][ ]
+    // [ ][X][ ]
+    // [ ][ ][ ]
+    // TODO
+  }
+
 }

@@ -39,6 +39,22 @@ public abstract class InventoryContentView {
     return (view != null ? view.getArea() : null);
   }
 
+  /**
+   * Returns the item at given {@code position}.
+   * <p>Given {@code position} is <strong>absolute</strong>.
+   * <p>Absolute positioning means, that the position is relative to the inventory itself.
+   * If this view is only a partition of the entire inventory, the given position will
+   * <italic>not</italic> be relative to that partition, but rather be relative in context to the
+   * entire inventory (or parent in some cases).
+   *
+   * @param accessor the accessor, trying to access the underlying item
+   * @param position the requesting (absolute!) position to access the target item
+   * @return the item requested for {@code position}, or null to represent transparency
+   * @apiNote Given {@code position} is <strong>absolute</strong>, meaning it may not be relative to
+   * this view (coordinate-wise). Thus, it is possible that an item is requested at a position,
+   * that falls out of this view. The solution to this issue is the sole responsibility of any
+   * implementation (see {@code includes} methods in {@link InventorySection}).
+   */
   public abstract @Nullable InventoryItem get(
       @Nullable InventoryItemAccessor accessor, InventoryPosition position);
 
@@ -62,7 +78,7 @@ public abstract class InventoryContentView {
   /**
    * Flattens (non-relative) {@code position} to a sequential element index relative to this area.
    *
-   * @param position the (non-relative!) view to map to an element index
+   * @param position the (absolute) view to map to an element index
    * @return the element index, or {@code -1} if {@code position} lies outside this area
    */
   public int toAreaElementIndex(InventoryPosition position) {
@@ -75,10 +91,8 @@ public abstract class InventoryContentView {
   }
 
   /**
-   * Returns {@code position}, but relative to this {@code area} and shifted by an offset equal
-   * to this area's beginning index.
-   * <p>This is useful to create an independent {@code InventoryPosition} that can be used by the
-   * outside, that references a relative position within this view.
+   * Returns the given relative {@code position} as an absolute position, relative to the parent.
+   *
    * <p>Assuming the {@code area} begins at {@code [1, 1]} and ends at {@code [3, 3]},
    * following examples can be used:
    * <ul>
@@ -95,8 +109,8 @@ public abstract class InventoryContentView {
    * @param position the relative position to transform into a normal position
    * @return the new non-relative position
    */
-  public InventoryPosition fromRelative(InventoryPosition position) {
-    return (parent != null ? position.relative(parent) : position).shift(area.getBegin().getIndex());
+  public InventoryPosition toAbsolute(InventoryPosition position) {
+    return (parent != null ? position.toRelative(parent) : position).shift(area.getBegin().getIndex());
   }
 
 }

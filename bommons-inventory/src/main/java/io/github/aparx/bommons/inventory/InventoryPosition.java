@@ -27,7 +27,7 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
   private static final InventoryPositionInstancePool positionInstancePool =
       new InventoryPositionInstancePool(InventoryDimensions.DEFAULT_WIDTH, 4);
 
-  private static final InventoryPosition FIRST_POSITION =
+  private static final InventoryPosition ZERO_POSITION =
       new InventoryPosition(0, InventoryDimensions.DEFAULT_WIDTH);
 
   private final int index;
@@ -43,8 +43,8 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
     this.row = toRow(index, width);
   }
 
-  public static InventoryPosition ofFirst() {
-    return FIRST_POSITION;
+  public static InventoryPosition ofZero() {
+    return ZERO_POSITION;
   }
 
   public static InventoryPosition ofLast(InventorySection section) {
@@ -56,8 +56,8 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
   }
 
   public static InventoryPosition ofPoint(int column, int row, int width) {
-    if (column == 0 && row == 0 && width == FIRST_POSITION.getWidth())
-      return FIRST_POSITION;
+    if (column == 0 && row == 0 && width == ZERO_POSITION.getWidth())
+      return ZERO_POSITION;
     Preconditions.checkArgument(column >= 0, "Column must not be negative");
     Preconditions.checkArgument(row >= 0, "Row must not be negative");
     return positionInstancePool.atPoint(column, row, width);
@@ -84,7 +84,7 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
   }
 
   public static int toIndex(int column, int row, int width) {
-    Preconditions.checkArgument(column < width, "Column must be less than the width");
+    Preconditions.checkArgument(column < width, "Column must be less than the width", column, width);
     return column + Math.max(row * width, 0);
   }
 
@@ -137,7 +137,7 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
    * @param dimensions the relative dimensions
    * @return the new position, relative to {@code dimensions}
    */
-  public InventoryPosition relative(InventoryDimensions dimensions) {
+  public InventoryPosition toRelative(InventoryDimensions dimensions) {
     final int width = dimensions.getWidth();
     return (this.width != width ? ofIndex(getIndex(), width) : this);
   }
@@ -153,7 +153,7 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
    *                                  {@code section.includes(this)} evaluates false.
    * @see InventorySection#includes(InventoryPosition)
    */
-  public InventoryPosition relative(InventorySection section) {
+  public InventoryPosition toRelative(InventorySection section) {
     Preconditions.checkArgument(section.includes(this), "Section does not contain position");
     InventoryPosition begin = section.getBegin();
     int width = section.getDimensions().getWidth();
@@ -223,6 +223,10 @@ public final class InventoryPosition implements Comparable<InventoryPosition>,
 
   public int getColumn() {
     return column;
+  }
+
+  public boolean isAtColumnEnd() {
+    return column == width - 1;
   }
 
   public int getRow() {

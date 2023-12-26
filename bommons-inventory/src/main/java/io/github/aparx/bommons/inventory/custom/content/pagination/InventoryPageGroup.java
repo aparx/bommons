@@ -42,6 +42,9 @@ public class InventoryPageGroup extends CopyableInventoryContentView implements 
   public InventoryPageGroup copy() {
     InventoryPageGroup pageGroup = new InventoryPageGroup(getArea(), getParent());
     pageGroup.pages.addAll(pages);
+    pageGroup.itemHandler.setPlaceholder(itemHandler.getPlaceholder());
+    for (PaginationItemType type : PaginationItemType.values())
+      pageGroup.itemHandler.set(type, itemHandler.get(type));
     return pageGroup;
   }
 
@@ -64,9 +67,13 @@ public class InventoryPageGroup extends CopyableInventoryContentView implements 
     if (hasPagination())
       for (PaginationItemType type : PaginationItemType.values()) {
         PaginationItemHandler.PaginationItem item = itemHandler.get(type);
-        if (position.getIndex() == item.getAbsolutePosition().getIndex())
-          return (hasSuccessor(type.getSkipType(), 1) ? item.getItem() :
-              itemHandler.getPlaceholder());
+        if (position.getIndex() == item.getAbsolutePosition().getIndex()) {
+          if (hasMore(type.getSkipType(), 1))
+            return item.getItem();
+          @Nullable InventoryItem placeholder = itemHandler.getPlaceholder();
+          if (placeholder != null) return placeholder;
+          else break;
+        }
       }
     @Nullable InventoryContentView page = getCurrentPage();
     return (page != null ? page.get(accessor, position) : null);
@@ -87,7 +94,7 @@ public class InventoryPageGroup extends CopyableInventoryContentView implements 
     return pageIndex != newPageIndex && paginate(newPageIndex);
   }
 
-  public boolean hasSuccessor(PaginationSkipType type, int multiplier) {
+  public boolean hasMore(PaginationSkipType type, int multiplier) {
     int target = pageIndex + multiplier * type.getFactor();
     if (type == PaginationSkipType.NEXT)
       return target >= 0 && target < pages.size();
@@ -97,11 +104,11 @@ public class InventoryPageGroup extends CopyableInventoryContentView implements 
   }
 
   public boolean hasNextPage() {
-    return hasSuccessor(PaginationSkipType.NEXT, 1);
+    return hasMore(PaginationSkipType.NEXT, 1);
   }
 
   public boolean hasPreviousPage() {
-    return hasSuccessor(PaginationSkipType.PREVIOUS, 1);
+    return hasMore(PaginationSkipType.PREVIOUS, 1);
   }
 
   public void clear() {

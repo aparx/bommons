@@ -48,7 +48,7 @@ public class InventoryLayerGroup extends CopyableInventoryContentView {
   public void addLayer(InventoryContentView layerView) {
     Preconditions.checkNotNull(layerView, "Layer must not be null");
     InventorySection section = layerView.getArea();
-    Preconditions.checkArgument(getArea().includes(section), "layerView is not within page");
+    Preconditions.checkArgument(getArea().includes(section), "Layer is not within page");
     layers.add(layerView);
   }
 
