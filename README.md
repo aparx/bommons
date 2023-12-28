@@ -22,7 +22,7 @@ This is an external module, but worth mentioning. It once used to live among the
 
 <dependencies>
   <dependency>
-    <groupId>com.github.aparx</groupId>
+    <groupId>com.github.aparx.bommons</groupId>
     <artifactId>bommons-core</artifactId>
     <version>1.0.0-SNAPSHOT</version>
   </dependency>
