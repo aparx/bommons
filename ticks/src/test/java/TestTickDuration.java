@@ -1,6 +1,5 @@
 import com.github.aparx.bommons.ticks.TickDuration;
 import com.github.aparx.bommons.ticks.TickTimeUnit;
-import io.github.aparx.bommons.ticks.*;
 import org.junit.Assert;
 import org.junit.Test;
 
