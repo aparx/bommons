@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.entity.Entity;
 import org.bukkit.util.NumberConversions;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;

@@ -1,6 +1,7 @@
 package com.github.aparx.bommons.core.position;
 
 import com.google.errorprone.annotations.CheckReturnValue;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -122,6 +123,54 @@ public class Position implements Vec3D, ConfigurationSerializable {
 
   public Block getBlock(World world) {
     return world.getBlockAt(getBlockX(), getBlockY(), getBlockZ());
+  }
+
+  public Chunk getChunk(World world) {
+    return world.getChunkAt(getBlockX(), getBlockZ());
+  }
+
+  public double length() {
+    return Math.sqrt(lengthSquared());
+  }
+
+  public double lengthSquared() {
+    return NumberConversions.square(posX)
+        + NumberConversions.square(posY)
+        + NumberConversions.square(posZ);
+  }
+
+  public double distance(Vec3D other) {
+    return distance(other.getX(), other.getY(), other.getZ());
+  }
+
+  public double distance(Location location) {
+    return distance(location.getX(), location.getY(), location.getZ());
+  }
+
+  public double distance(Vector vector) {
+    return distance(vector.getX(), vector.getY(), vector.getZ());
+  }
+
+  public double distance(double x, double y, double z) {
+    return Math.sqrt(distanceSquared(x, y, z));
+  }
+
+  public double distanceSquared(double x, double y, double z) {
+    return NumberConversions.square(posX - x)
+        + NumberConversions.square(posY - y)
+        + NumberConversions.square(posZ - z);
+  }
+
+  public double distanceSquared(Vec3D other) {
+    return distanceSquared(other.getX(), other.getY(), other.getZ());
+  }
+
+  public double distanceSquared(Location location) {
+    return distanceSquared(location.getX(), location.getY(), location.getZ());
+  }
+
+  public double distanceSquared(Vector vector) {
+    return distanceSquared(vector.getX(), vector.getY(), vector.getZ());
   }
 
   // +--------------------- Arithmetic ---------------------+

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -115,6 +116,10 @@ public class WorldPosition extends Position {
 
   public Block getBlock() {
     return getBlock(getWorld());
+  }
+
+  public Chunk getChunk() {
+    return getWorld().getChunkAt(getBlockX(), getBlockZ());
   }
 
   public Location toLocation() {
