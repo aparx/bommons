@@ -113,6 +113,18 @@ public class Position implements Vec3D, ConfigurationSerializable {
     return new Location(world, posX, posY, posZ);
   }
 
+  public void applyTo(Vector vector) {
+    vector.setX(posX);
+    vector.setY(posY);
+    vector.setZ(posZ);
+  }
+
+  public void applyTo(Location location) {
+    location.setX(posX);
+    location.setY(posY);
+    location.setZ(posZ);
+  }
+
   public Vector toVector() {
     return new Vector(posX, posY, posZ);
   }

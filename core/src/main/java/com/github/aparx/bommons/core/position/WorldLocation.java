@@ -5,7 +5,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
-import org.bukkit.entity.Entity;
 import org.bukkit.util.NumberConversions;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -16,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Immutable object that
+ *
  * @author aparx (Vinzent Z.)
  * @version 2023-12-31 06:10
  * @since 1.0
@@ -144,6 +145,24 @@ public class WorldLocation extends WorldPosition implements Rot2F {
   }
 
   @Override
+  public Location toLocation(@Nullable World world) {
+    Location location = super.toLocation(world);
+    if (!hasRotation()) return location;
+    location.setYaw(getYaw());
+    location.setPitch(getPitch());
+    return location;
+  }
+
+  @Override
+  public void applyTo(Location location) {
+    super.applyTo(location);
+    if (hasRotation()) {
+      location.setYaw(getYaw());
+      location.setPitch(getPitch());
+    }
+  }
+
+  @Override
   public WorldLocation add(double x, double y, double z) {
     return new WorldLocation(findWorld(), posX + x, posY + y, posZ + z, rotation);
   }
@@ -202,4 +221,5 @@ public class WorldLocation extends WorldPosition implements Rot2F {
   public WorldLocation multiply(Location location) {
     return (WorldLocation) super.multiply(location);
   }
+
 }

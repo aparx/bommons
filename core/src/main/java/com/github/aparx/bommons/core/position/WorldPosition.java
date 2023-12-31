@@ -126,6 +126,11 @@ public class WorldPosition extends Position {
     return toLocation(getWorld());
   }
 
+  public void applyTo(Location location) {
+    location.setWorld(findWorld());
+    super.applyTo(location);
+  }
+
   @Override
   public WorldPosition add(double x, double y, double z) {
     return new WorldPosition(findWorld(), posX + x, posY + y, posZ + z);
